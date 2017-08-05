@@ -5,17 +5,17 @@ var nfa_delegate = (function() {
   var dialogDiv = null;
   var dialogActiveConnection = null;
   var emptyLabel = 'ϵ';
-  
+
   var statusConnectors = [];
-  
+
   var updateUIForDebug = function() {
     var status = nfa.status();
-    
+
     $('.current').removeClass('current');
     $.each(statusConnectors, function(index, connection) {
       connection.setPaintStyle(jsPlumb.Defaults.PaintStyle);
     });
-    
+
     var comparisonChar = status.nextChar === '' ? emptyLabel : status.nextChar;
     $.each(status.states, function(index, state) {
       var curState = $('#' + state).addClass('current');
@@ -31,15 +31,16 @@ var nfa_delegate = (function() {
 
   var dialogSave = function(update) {
     var inputChar = $('#nfa_dialog_readCharTxt').val();
-    if (inputChar.length > 1) {inputChar = inputChar[0];}
-    
+    //candy water update 2017
+    //if (inputChar.length > 1) {inputChar = inputChar[0];}
+
     if (update) {
       nfa.removeTransition(dialogActiveConnection.sourceId, dialogActiveConnection.getLabel(), dialogActiveConnection.targetId);
     } else if (nfa.hasTransition(dialogActiveConnection.sourceId, inputChar, dialogActiveConnection.targetId)) {
       alert(dialogActiveConnection.sourceId + " already has a transition to " + dialogActiveConnection.targetId + " on " + (inputChar || emptyLabel));
       return;
     }
-    
+
     dialogActiveConnection.setLabel(inputChar || emptyLabel);
     nfa.addTransition(dialogActiveConnection.sourceId, inputChar, dialogActiveConnection.targetId);
     dialogDiv.dialog("close");
@@ -49,13 +50,13 @@ var nfa_delegate = (function() {
     if (!update) {fsm.removeConnection(dialogActiveConnection);}
     dialogDiv.dialog("close");
   };
-  
+
   var dialogDelete = function() {
     nfa.removeTransition(dialogActiveConnection.sourceId, dialogActiveConnection.getLabel(), dialogActiveConnection.targetId);
     fsm.removeConnection(dialogActiveConnection);
     dialogDiv.dialog("close");
   };
-  
+
   var dialogClose = function() {
     dialogActiveConnection = null;
   };
@@ -64,7 +65,8 @@ var nfa_delegate = (function() {
     dialogDiv = $('<div></div>', {style:'text-align:center;'});
     $('<div></div>', {style:'font-size:small;'}).html('Blank for Empty String: '+emptyLabel+'<br />Read from Input').appendTo(dialogDiv);
     $('<span></span>', {id:'nfa_dialog_stateA', 'class':'tranStart'}).appendTo(dialogDiv);
-    $('<input />', {id:'nfa_dialog_readCharTxt', type:'text', maxlength:1, style:'width:30px;text-align:center;'})
+    //candywater update maxlength 1 -> 10
+    $('<input />', {id:'nfa_dialog_readCharTxt', type:'text', maxlength:10, style:'width:30px;text-align:center;'})
       .val('A')
       .keypress(function(event) {
         if (event.which === $.ui.keyCode.ENTER) {dialogDiv.parent().find('div.ui-dialog-buttonset button').eq(-1).click();}
@@ -72,7 +74,7 @@ var nfa_delegate = (function() {
       .appendTo(dialogDiv);
     $('<span></span>', {id:'nfa_dialog_stateB', 'class':'tranEnd'}).appendTo(dialogDiv);
     $('body').append(dialogDiv);
-    
+
     dialogDiv.dialog({
       dialogClass: "no-close",
       autoOpen: false,
@@ -91,27 +93,27 @@ var nfa_delegate = (function() {
       makeDialog();
       return self;
     },
-    
+
     setContainer: function(newContainer) {
       container = newContainer;
       return self;
     },
-    
+
     fsm: function() {
       return nfa;
     },
-    
+
     connectionAdded: function(info) {
       dialogActiveConnection = info.connection;
       $('#nfa_dialog_stateA').html(dialogActiveConnection.sourceId + '&nbsp;');
       $('#nfa_dialog_stateB').html('&nbsp;' + dialogActiveConnection.targetId);
-      
+
       dialogDiv.dialog('option', 'buttons', {
         Cancel: function(){dialogCancel(false);},
         Save: function(){dialogSave(false);}
       }).dialog("open");
     },
-    
+
     connectionClicked: function(connection) {
       dialogActiveConnection = connection;
       $('#nfa_dialog_readCharTxt').val(dialogActiveConnection.getLabel());
@@ -121,25 +123,25 @@ var nfa_delegate = (function() {
         Save: function(){dialogSave(true);}
       }).dialog("open");
     },
-    
+
     updateUI: updateUIForDebug,
-    
+
     getEmptyLabel: function() {return emptyLabel;},
-    
+
     reset: function() {
       nfa = new NFA();
       return self;
     },
-    
+
     debugStart: function() {
       return self;
     },
-    
+
     debugStop: function() {
       $('.current').removeClass('current');
       return self;
     },
-    
+
     serialize: function() {
       // Convert dfa into common serialized format
       var model = {};
@@ -161,7 +163,7 @@ var nfa_delegate = (function() {
       });
       return model;
     },
-    
+
     deserialize: function(model) {
       nfa.deserialize(model.nfa);
     }
