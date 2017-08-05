@@ -4,15 +4,15 @@ var dfa_delegate = (function() {
   var container = null;
   var dialogDiv = null;
   var dialogActiveConnection = null;
-  
+
   var statusConnector = null;
 
   var updateUIForDebug = function() {
     var status = dfa.status();
-    
+
     $('.current').removeClass('current');
     if (statusConnector) {statusConnector.setPaintStyle(jsPlumb.Defaults.PaintStyle);}
-    
+
     var curState = $('#' + status.state).addClass('current');
     jsPlumb.select({source:status.state}).each(function(connection) {
       if (connection.getLabel() === status.nextChar) {
@@ -25,19 +25,20 @@ var dfa_delegate = (function() {
 
   var dialogSave = function(update) {
     var inputChar = $('#dfa_dialog_readCharTxt').val();
-    if (inputChar.length > 1) {inputChar = inputChar[0];}
+    //candywater update 2017
+    //if (inputChar.length > 1) {inputChar = inputChar[0];}
     if (inputChar.length === 0) {
       alert("Deterministic Finite Automaton cannot have empty-string transition.");
       return;
     }
-    
+
     if (update) {
       dfa.removeTransition(dialogActiveConnection.sourceId, dialogActiveConnection.getLabel(), dialogActiveConnection.targetId);
     } else if (dfa.hasTransition(dialogActiveConnection.sourceId, inputChar)) {
       alert(dialogActiveConnection.sourceId + " already has a transition for " + inputChar);
       return;
     }
-    
+
     dialogActiveConnection.setLabel(inputChar);
     dfa.addTransition(dialogActiveConnection.sourceId, inputChar, dialogActiveConnection.targetId);
     dialogDiv.dialog("close");
@@ -47,13 +48,13 @@ var dfa_delegate = (function() {
     if (!update) {fsm.removeConnection(dialogActiveConnection);}
     dialogDiv.dialog("close");
   };
-  
+
   var dialogDelete = function() {
     dfa.removeTransition(dialogActiveConnection.sourceId, dialogActiveConnection.getLabel(), dialogActiveConnection.targetId);
     fsm.removeConnection(dialogActiveConnection);
     dialogDiv.dialog("close");
   };
-  
+
   var dialogClose = function() {
     dialogActiveConnection = null;
   };
@@ -62,7 +63,8 @@ var dfa_delegate = (function() {
     dialogDiv = $('<div></div>', {style:'text-align:center;'});
     $('<div></div>', {style:'font-size:small;'}).html('Empty transitions not allowed for DFAs<br />Read from Input').appendTo(dialogDiv);
     $('<span></span>', {id:'dfa_dialog_stateA', 'class':'tranStart'}).appendTo(dialogDiv);
-    $('<input />', {id:'dfa_dialog_readCharTxt', type:'text', maxlength:1, style:'width:30px;text-align:center;'})
+    //candywater udpate the maxlength 1 -> 10
+    $('<input />', {id:'dfa_dialog_readCharTxt', type:'text', maxlength:10, style:'width:30px;text-align:center;'})
       .val('A')
       .keypress(function(event) {
         if (event.which === $.ui.keyCode.ENTER) {dialogDiv.parent().find('div.ui-dialog-buttonset button').eq(-1).click();}
@@ -70,7 +72,7 @@ var dfa_delegate = (function() {
       .appendTo(dialogDiv);
     $('<span></span>', {id:'dfa_dialog_stateB', 'class':'tranEnd'}).appendTo(dialogDiv);
     $('body').append(dialogDiv);
-    
+
     dialogDiv.dialog({
       dialogClass: "no-close",
       autoOpen: false,
@@ -89,27 +91,27 @@ var dfa_delegate = (function() {
       makeDialog();
       return self;
     },
-    
+
     setContainer: function(newContainer) {
       container = newContainer;
       return self;
     },
-    
+
     fsm: function() {
       return dfa;
     },
-    
+
     connectionAdded: function(info) {
       dialogActiveConnection = info.connection;
       $('#dfa_dialog_stateA').html(dialogActiveConnection.sourceId + '&nbsp;');
       $('#dfa_dialog_stateB').html('&nbsp;' + dialogActiveConnection.targetId);
-      
+
       dialogDiv.dialog('option', 'buttons', {
         Cancel: function(){dialogCancel(false);},
         Save: function(){dialogSave(false);}
       }).dialog("open");
     },
-    
+
     connectionClicked: function(connection) {
       dialogActiveConnection = connection;
       $('#dfa_dialog_readCharTxt').val(dialogActiveConnection.getLabel());
@@ -119,25 +121,25 @@ var dfa_delegate = (function() {
         Save: function(){dialogSave(true);}
       }).dialog("open");
     },
-    
+
     updateUI: updateUIForDebug,
-    
+
     getEmptyLabel: function() {return null;},
-    
+
     reset: function() {
       dfa = new DFA();
       return self;
     },
-    
+
     debugStart: function() {
       return self;
     },
-    
+
     debugStop: function() {
       $('.current').removeClass('current');
       return self;
     },
-    
+
     serialize: function() {
       // Convert dfa into common serialized format
       var model = {};
@@ -157,7 +159,7 @@ var dfa_delegate = (function() {
       });
       return model;
     },
-    
+
     deserialize: function(model) {
       dfa.deserialize(model.dfa);
     }

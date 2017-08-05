@@ -247,10 +247,10 @@ var fsm = (function() {
 		makeStatePlumbing(startState);
 	};
 
-	var makeState = function(stateId) {
+	var makeState = function(stateId, stateName = stateId) {
 		return $('<div id="' + stateId + '" class="state"></div>')
 			.append('<input id="' + stateId+'_isAccept' + '" type="checkbox" class="isAccept" value="true" title="Accept State" />')
-			.append(stateId)
+			.append(stateName)
 			.append('<div class="plumbSource" title="Drag from here to create new transition">&nbsp;</div>')
 			.append('<div class="delete" style="display:none;" title="Delete"><img class="delete" src="images/empty.png" /></div>');
 	};
@@ -270,6 +270,12 @@ var fsm = (function() {
 		});
 		return state;
 	};
+
+	//added by candy water 2017
+	var getStateName = function(stateId){
+		var stateName = jQuery("#stateName").val();
+		return stateName == "" ? stateId : stateName;
+	}
 
 	return {
 		init: function() {
@@ -298,9 +304,11 @@ var fsm = (function() {
 			return self;
 		},
 
+
 		addState: function() {
 			while ($('#s'+stateCounter).length > 0) {++stateCounter;} // Prevent duplicate states after loading
-			var state = makeState('s' + stateCounter);
+			var stateName = getStateName('s' + stateCounter);
+			var state = makeState('s' + stateCounter, stateName);
 			container.append(state);
 			jsPlumb.draggable(state, {containment:"parent"});
 			makeStatePlumbing(state);
